@@ -24,17 +24,18 @@ enum _DeviceAvailability {
 class _DeviceWithAvailability extends BluetoothDevice {
   BluetoothDevice device;
   _DeviceAvailability availability;
-  int rssi;
+  int? rssi;
 
-  _DeviceWithAvailability(this.device, this.availability, [this.rssi]);
+  _DeviceWithAvailability(this.device, this.availability, [this.rssi])
+      : super(name: device.name, address: device.address);
 }
 
 class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
-  List<_DeviceWithAvailability> devices = List<_DeviceWithAvailability>();
+  List<_DeviceWithAvailability> devices = <_DeviceWithAvailability>[];
 
   // Availability
-  StreamSubscription<BluetoothDiscoveryResult> _discoveryStreamSubscription;
-  bool _isDiscovering;
+  StreamSubscription<BluetoothDiscoveryResult>? _discoveryStreamSubscription;
+  late bool _isDiscovering;
 
   _SelectBondedDevicePage();
 
@@ -90,7 +91,7 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
       });
     });
 
-    _discoveryStreamSubscription.onDone(() {
+    _discoveryStreamSubscription?.onDone(() {
       setState(() {
         _isDiscovering = false;
       });
@@ -109,7 +110,7 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
   Widget build(BuildContext context) {
     List<BluetoothDeviceListEntry> list = devices
         .map((_device) => BluetoothDeviceListEntry(
-              device: _device.device,
+              _device.device,
               rssi: _device.rssi,
               enabled: _device.availability == _DeviceAvailability.yes,
               onTap: () {

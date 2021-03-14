@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 class BluetoothDeviceListEntry extends ListTile {
-  BluetoothDeviceListEntry({
-    @required BluetoothDevice device,
-    int rssi,
-    GestureTapCallback onTap,
-    GestureLongPressCallback onLongPress,
+  BluetoothDeviceListEntry(
+    BluetoothDevice device, {
+    //@required BluetoothDevice device,
+    int? rssi,
+    GestureTapCallback? onTap,
+    GestureLongPressCallback? onLongPress,
     bool enabled = true,
   }) : super(
           onTap: onTap,
@@ -14,7 +15,7 @@ class BluetoothDeviceListEntry extends ListTile {
           enabled: enabled,
           leading:
               Icon(Icons.devices), // @TODO . !BluetoothClass! class aware icon
-          title: Text(device.name ?? "Unknown device"),
+          title: Text(device.name),
           subtitle: Text(device.address.toString()),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,

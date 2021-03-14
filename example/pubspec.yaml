@@ -5,11 +5,15 @@ authors:
 - Patryk Ludwikowski <patryk.ludwikowski.7@gmail.com>
 homepage: https://github.com/edufolly/flutter_bluetooth_serial/tree/master/example/
 
+environment: 
+  sdk: '>=2.12.0 <3.0.0'
+
+
 dependencies:
   flutter:
     sdk: flutter
 
-  scoped_model: ^1.0.1
+  scoped_model: 2.0.0-nullsafety.0
 
   cupertino_icons: ^0.1.2
 

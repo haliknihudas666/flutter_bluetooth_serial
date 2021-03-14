@@ -10,10 +10,10 @@ class DataSample {
   DateTime timestamp;
 
   DataSample({
-    this.temperature1,
-    this.temperature2,
-    this.waterpHlevel,
-    this.timestamp,
+    required this.temperature1,
+    required this.temperature2,
+    required this.waterpHlevel,
+    required this.timestamp,
   });
 }
 
@@ -28,15 +28,15 @@ class BackgroundCollectingTask extends Model {
       );
 
   final BluetoothConnection _connection;
-  List<int> _buffer = List<int>();
+  List<int> _buffer = <int>[];
 
   // @TODO , Such sample collection in real code should be delegated
   // (via `Stream<DataSample>` preferably) and then saved for later
   // displaying on chart (or even stright prepare for displaying).
   // @TODO ? should be shrinked at some point, endless colleting data would cause memory shortage.
-  List<DataSample> samples = List<DataSample>();
+  List<DataSample> samples = <DataSample>[];
 
-  bool inProgress;
+  late bool inProgress;
 
   BackgroundCollectingTask._fromConnection(this._connection) {
     _connection.input.listen((data) {

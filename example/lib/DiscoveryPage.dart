@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
@@ -15,9 +16,9 @@ class DiscoveryPage extends StatefulWidget {
 }
 
 class _DiscoveryPage extends State<DiscoveryPage> {
-  StreamSubscription<BluetoothDiscoveryResult> _streamSubscription;
-  List<BluetoothDiscoveryResult> results = List<BluetoothDiscoveryResult>();
-  bool isDiscovering;
+  StreamSubscription<BluetoothDiscoveryResult>? _streamSubscription;
+  List<BluetoothDiscoveryResult>? results = <BluetoothDiscoveryResult>[];
+  bool? isDiscovering;
 
   _DiscoveryPage();
 
@@ -26,14 +27,14 @@ class _DiscoveryPage extends State<DiscoveryPage> {
     super.initState();
 
     isDiscovering = widget.start;
-    if (isDiscovering) {
+    if (isDiscovering ?? false) {
       _startDiscovery();
     }
   }
 
   void _restartDiscovery() {
     setState(() {
-      results.clear();
+      results?.clear();
       isDiscovering = true;
     });
 
@@ -44,11 +45,11 @@ class _DiscoveryPage extends State<DiscoveryPage> {
     _streamSubscription =
         FlutterBluetoothSerial.instance.startDiscovery().listen((r) {
       setState(() {
-        results.add(r);
+        results?.add(r);
       });
     });
 
-    _streamSubscription.onDone(() {
+    _streamSubscription?.onDone(() {
       setState(() {
         isDiscovering = false;
       });
@@ -69,11 +70,11 @@ class _DiscoveryPage extends State<DiscoveryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: isDiscovering
+        title: isDiscovering ?? false
             ? Text('Discovering devices')
             : Text('Discovered devices'),
         actions: <Widget>[
-          isDiscovering
+          isDiscovering ?? false
               ? FittedBox(
                   child: Container(
                     margin: new EdgeInsets.all(16.0),
@@ -89,11 +90,11 @@ class _DiscoveryPage extends State<DiscoveryPage> {
         ],
       ),
       body: ListView.builder(
-        itemCount: results.length,
+        itemCount: results?.length,
         itemBuilder: (BuildContext context, index) {
-          BluetoothDiscoveryResult result = results[index];
+          BluetoothDiscoveryResult result = results![index];
           return BluetoothDeviceListEntry(
-            device: result.device,
+            result.device,
             rssi: result.rssi,
             onTap: () {
               Navigator.of(context).pop(result.device);
@@ -109,14 +110,15 @@ class _DiscoveryPage extends State<DiscoveryPage> {
                 } else {
                   print('Bonding with ${result.device.address}...');
                   bonded = await FlutterBluetoothSerial.instance
-                      .bondDeviceAtAddress(result.device.address);
+                      .bondDeviceAtAddress(result.device.address,
+                          passkeyConfirm: false);
                   print(
                       'Bonding with ${result.device.address} has ${bonded ? 'succed' : 'failed'}.');
                 }
                 setState(() {
-                  results[results.indexOf(result)] = BluetoothDiscoveryResult(
+                  results![results!.indexOf(result)] = BluetoothDiscoveryResult(
                       device: BluetoothDevice(
-                        name: result.device.name ?? '',
+                        name: result.device.name,
                         address: result.device.address,
                         type: result.device.type,
                         bondState: bonded
@@ -133,7 +135,7 @@ class _DiscoveryPage extends State<DiscoveryPage> {
                       title: const Text('Error occured while bonding'),
                       content: Text("${ex.toString()}"),
                       actions: <Widget>[
-                        new FlatButton(
+                        new TextButton(
                           child: new Text("Close"),
                           onPressed: () {
                             Navigator.of(context).pop();

@@ -15,15 +15,13 @@ class FlutterBluetoothSerial {
       switch (call.method) {
         case 'handlePairingRequest':
           if (_pairingRequestHandler != null) {
-            return _pairingRequestHandler(
+            return _pairingRequestHandler!(
                 BluetoothPairingRequest.fromMap(call.arguments));
           }
-          return null;
-          break;
+          return _pairingRequestHandler!();
 
         default:
           throw 'unknown common code method - not implemented';
-          break;
       }
     });
   }
@@ -56,14 +54,15 @@ class FlutterBluetoothSerial {
   /// Returns the hardware address of the local Bluetooth adapter.
   ///
   /// Does not work for third party applications starting at Android 6.0.
-  Future<String> get address => _methodChannel.invokeMethod("getAddress");
+  Future<String?> get address =>
+      _methodChannel.invokeMethod<String>("getAddress");
 
   /// Returns the friendly Bluetooth name of the local Bluetooth adapter.
   ///
   /// This name is visible to remote Bluetooth devices.
   ///
   /// Does not work for third party applications starting at Android 6.0.
-  Future<String> get name => _methodChannel.invokeMethod("getName");
+  Future<String?> get name => _methodChannel.invokeMethod<String>("getName");
 
   /// Sets the friendly Bluetooth name of the local Bluetooth adapter.
   ///
@@ -74,8 +73,8 @@ class FlutterBluetoothSerial {
   /// and some may be limited to just 20.
   ///
   /// Does not work for third party applications starting at Android 6.0.
-  Future<bool> changeName(String name) =>
-      _methodChannel.invokeMethod("setName", {"name": name});
+  Future<bool?> changeName(String name) =>
+      _methodChannel.invokeMethod<bool>("setName", {"name": name});
 
   /* Adapter settings and general */
   /// Tries to enable Bluetooth interface (if disabled).
@@ -108,14 +107,16 @@ class FlutterBluetoothSerial {
   /// Note: `passkeyConfirm` will probably not work, since 3rd party apps cannot
   /// get `BLUETOOTH_PRIVILEGED` permission (at least on newest Androids).
   Future<bool> bondDeviceAtAddress(String address,
-      {String pin, bool passkeyConfirm}) async {
+      {String? pin, bool? passkeyConfirm}) async {
     if (pin != null || passkeyConfirm != null) {
       if (_pairingRequestHandler != null) {
         throw "pairing request handler already registered";
       }
       setPairingRequestHandler((BluetoothPairingRequest request) async {
         Future.delayed(Duration(seconds: 1), () {
-          setPairingRequestHandler(null);
+          setPairingRequestHandler((_) {
+            return Future.value();
+          });
         });
         if (pin != null) {
           switch (request.pairingVariant) {
@@ -153,7 +154,7 @@ class FlutterBluetoothSerial {
           .invokeMethod('removeDeviceBond', {'address': address});
 
   // Function used as pairing request handler.
-  Function _pairingRequestHandler;
+  Function? _pairingRequestHandler;
 
   /// Allows listening and responsing for incoming pairing requests.
   ///
@@ -181,7 +182,7 @@ class FlutterBluetoothSerial {
   /// Note: It is necessary to return from handler within 10 seconds, since
   /// Android BroadcastReceiver can wait safely only up to that duration.
   void setPairingRequestHandler(
-      Future<dynamic> handler(BluetoothPairingRequest request)) {
+      Future<dynamic> handler(BluetoothPairingRequest request)?) {
     if (handler == null) {
       _pairingRequestHandler = null;
       _methodChannel.invokeMethod('pairingRequestHandlingDisable');
@@ -208,13 +209,13 @@ class FlutterBluetoothSerial {
 
   /// Starts discovery and provides stream of `BluetoothDiscoveryResult`s.
   Stream<BluetoothDiscoveryResult> startDiscovery() async* {
-    StreamSubscription subscription;
-    StreamController controller;
+    StreamSubscription? subscription;
+    StreamController? controller;
 
     controller = new StreamController(
       onCancel: () {
         // `cancelDiscovery` happens automaticly by platform code when closing event sink
-        subscription.cancel();
+        subscription?.cancel();
       },
     );
 
@@ -232,11 +233,11 @@ class FlutterBluetoothSerial {
 
   /// Cancels the discovery
   Future<void> cancelDiscovery() async =>
-      await _methodChannel.invokeMethod('cancelDiscovery');
+      await _methodChannel.invokeMethod<void>('cancelDiscovery');
 
   /// Describes is the local device in discoverable mode.
-  Future<bool> get isDiscoverable =>
-      _methodChannel.invokeMethod("isDiscoverable");
+  Future<bool?> get isDiscoverable =>
+      _methodChannel.invokeMethod<bool>("isDiscoverable");
 
   /// Asks for discoverable mode (probably always prompt for user interaction in fact).
   /// Returns number of seconds acquired or zero if canceled or failed gracefully.
@@ -248,11 +249,11 @@ class FlutterBluetoothSerial {
 
   /* Connecting and connection */
   // Default connection methods
-  BluetoothConnection _defaultConnection;
+  BluetoothConnection? _defaultConnection;
 
   @Deprecated('Use `BluetoothConnection.isEnabled` instead')
   Future<bool> get isConnected async => Future.value(
-      _defaultConnection == null ? false : _defaultConnection.isConnected);
+      _defaultConnection == null ? false : _defaultConnection!.isConnected);
 
   @Deprecated('Use `BluetoothConnection.toAddress(device.address)` instead')
   Future<void> connect(BluetoothDevice device) =>
@@ -265,21 +266,29 @@ class FlutterBluetoothSerial {
 
   @Deprecated(
       'Use `BluetoothConnection.finish` or `BluetoothConnection.close` instead')
-  Future<void> disconnect() => _defaultConnection.finish();
+  Future<void> disconnect() => _defaultConnection != null
+      ? _defaultConnection!.finish()
+      : Future.value();
 
   @Deprecated('Use `BluetoothConnection.input` instead')
-  Stream<Uint8List> onRead() => _defaultConnection.input;
+  Stream<Uint8List> onRead() => _defaultConnection != null
+      ? _defaultConnection!.input
+      : Stream<Uint8List>.empty();
 
   @Deprecated(
       'Use `BluetoothConnection.output` with some decoding (such as `ascii.decode` for strings) instead')
   Future<void> write(String message) {
-    _defaultConnection.output.add(utf8.encode(message));
-    return _defaultConnection.output.allSent;
+    _defaultConnection?.output.add(utf8.encoder.convert(message));
+    return _defaultConnection != null
+        ? _defaultConnection!.output.allSent
+        : Future.value();
   }
 
   @Deprecated('Use `BluetoothConnection.output` instead')
   Future<void> writeBytes(Uint8List message) {
-    _defaultConnection.output.add(message);
-    return _defaultConnection.output.allSent;
+    _defaultConnection?.output.add(message);
+    return _defaultConnection != null
+        ? _defaultConnection!.output.allSent
+        : Future.value();
   }
 }

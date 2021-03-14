@@ -99,9 +99,11 @@ class BackgroundCollectedPage extends StatelessWidget {
               additionalMinimalHorizontalLabelsInterval: 0,
               additionalMinimalVerticalLablesInterval: 0,
               seriesPointsStyles: [
-                null,
-                null,
-                //const PaintStyle(style: PaintingStyle.stroke, strokeWidth: 1.7*3, color: Colors.indigo, strokeCap: StrokeCap.round),
+                const PaintStyle(
+                    style: PaintingStyle.stroke,
+                    strokeWidth: 1.7 * 3,
+                    color: Colors.indigo,
+                    strokeCap: StrokeCap.round),
               ],
               seriesLinesStyles: [
                 const PaintStyle(
@@ -113,6 +115,9 @@ class BackgroundCollectedPage extends StatelessWidget {
                     strokeWidth: 1.7,
                     color: Colors.redAccent),
               ],
+              horizontalLabelsTextStyle: TextStyle(),
+              valuesLabels: <LabelEntry>[],
+              verticalLabelsTextStyle: TextStyle(),
             ),
             Divider(),
             ListTile(
@@ -130,7 +135,10 @@ class BackgroundCollectedPage extends StatelessWidget {
               additionalMinimalHorizontalLabelsInterval: 0,
               additionalMinimalVerticalLablesInterval: 0,
               seriesPointsStyles: [
-                null,
+                const PaintStyle(
+                    style: PaintingStyle.stroke,
+                    strokeWidth: 1.7,
+                    color: Colors.indigoAccent),
               ],
               seriesLinesStyles: [
                 const PaintStyle(
@@ -138,6 +146,9 @@ class BackgroundCollectedPage extends StatelessWidget {
                     strokeWidth: 1.7,
                     color: Colors.greenAccent),
               ],
+              horizontalLabelsTextStyle: TextStyle(),
+              valuesLabels: <LabelEntry>[],
+              verticalLabelsTextStyle: TextStyle(),
             ),
           ],
         ));

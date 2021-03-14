@@ -29,8 +29,8 @@ class BluetoothDevice {
 
   /// Construct `BluetoothDevice` with given values.
   const BluetoothDevice({
-    this.name,
-    this.address,
+    required this.name,
+    required this.address,
     this.type = BluetoothDeviceType.unknown,
     this.isConnected = false,
     this.bondState = BluetoothBondState.unknown,
