@@ -21,7 +21,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +171,7 @@ public class FlutterBluetoothSerialPlugin implements MethodCallHandler, RequestP
                                 {
                                     final BroadcastReceiver.PendingResult broadcastResult = this.goAsync();
 
-                                    Map<String, Object> arguments = new HashMap<String, Object>();
+                                    Map<String, Object> arguments = new HashMap<>();
                                     arguments.put("address", device.getAddress());
                                     arguments.put("variant", pairingVariant);
 
@@ -987,10 +986,12 @@ public class FlutterBluetoothSerialPlugin implements MethodCallHandler, RequestP
         if (
             ContextCompat.checkSelfPermission(registrar.activity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) 
+                    != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(registrar.activity(),
+                    Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(registrar.activity(),
-                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_COARSE_LOCATION_PERMISSIONS);
 
             pendingPermissionsEnsureCallbacks = callbacks;
@@ -1016,7 +1017,9 @@ public class FlutterBluetoothSerialPlugin implements MethodCallHandler, RequestP
         switch (requestCode) {
             case REQUEST_ENABLE_BLUETOOTH:
                 // @TODO - used underlying value of `Activity.RESULT_CANCELED` since we tend to use `androidx` in which I were not able to find the constant.
-                pendingResultForActivityResult.success(resultCode == 0 ? false : true);
+                if (pendingResultForActivityResult != null) {
+                    pendingResultForActivityResult.success(resultCode == 0 ? false : true);
+                }
                 return true;
 
             case REQUEST_DISCOVERABLE_BLUETOOTH:
